@@ -1,19 +1,30 @@
-// let x = 45 + (foo * bar)
+//------------------------------------------
+//                            LEXER
+// --- Responsible for producing tokens from source code
+//------------------------------------------
 
-// [LetToken, IdentifierToken, EqualsToken, NumberToken, SemicolonToken]
+// Represents tokens that our language understands in parsing.
 export enum TokenType {
+  // Literal Types
+  Null,
   Number,
   Identifier,
+
+  // Keywords
+  Let,
+
+  // Grouping + Operators
+  BinaryOperator,
   Equals,
   OpenParen,
-  ClosePare,
-  BinaryOperator,
-  Let,
+  CloseParen,
   EOF, // end of file
 }
 
+// Constant lookup for keywords and known identifier + symbols.
 const KEYWORDS: Record<string, TokenType> = {
   let: TokenType.Let,
+  null: TokenType.Null,
 };
 
 export interface Token {
@@ -49,12 +60,13 @@ export function tokenize(sourceCode: string): Token[] {
     if (src[0] === "(") {
       tokens.push(token(src.shift(), TokenType.OpenParen));
     } else if (src[0] === ")") {
-      tokens.push(token(src.shift(), TokenType.ClosePare));
+      tokens.push(token(src.shift(), TokenType.CloseParen));
     } else if (
       src[0] === "+" ||
       src[0] === "-" ||
       src[0] === "*" ||
-      src[0] === "/"
+      src[0] === "/" ||
+      src[0] === "%"
     ) {
       tokens.push(token(src.shift(), TokenType.BinaryOperator));
     } else if (src[0] === "=") {
@@ -74,7 +86,7 @@ export function tokenize(sourceCode: string): Token[] {
         }
         // check for reserved keyword
         const reserved = KEYWORDS[ident];
-        if (reserved) {
+        if (typeof reserved === "number") {
           tokens.push(token(ident, reserved));
         } else {
           tokens.push(token(ident, TokenType.Identifier));
