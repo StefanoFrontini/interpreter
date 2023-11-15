@@ -6,7 +6,6 @@
 // Represents tokens that our language understands in parsing.
 export enum TokenType {
   // Literal Types
-  Null,
   Number,
   Identifier,
 
@@ -24,7 +23,6 @@ export enum TokenType {
 // Constant lookup for keywords and known identifier + symbols.
 const KEYWORDS: Record<string, TokenType> = {
   let: TokenType.Let,
-  null: TokenType.Null,
 };
 
 export interface Token {

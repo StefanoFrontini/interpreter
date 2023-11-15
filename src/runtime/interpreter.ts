@@ -1,15 +1,18 @@
 import { exit } from "node:process";
-import { BinaryExpr, NumericLiteral, Program, Stmt } from "../frontend/ast.js";
-import { NullVal, NumberVal, RuntimeVal } from "./values.js";
+import {
+  BinaryExpr,
+  Identifier,
+  NumericLiteral,
+  Program,
+  Stmt,
+} from "../frontend/ast.js";
+import Environment from "./environment.js";
+import { MK_NULL, NumberVal, RuntimeVal } from "./values.js";
 
-function eval_program(program: Program): RuntimeVal {
-  let lastEvaluated: RuntimeVal = {
-    type: "null",
-    value: "null",
-  } as NullVal;
-
+function eval_program(program: Program, env: Environment): RuntimeVal {
+  let lastEvaluated: RuntimeVal = MK_NULL();
   for (const statement of program.body) {
-    lastEvaluated = evaluate(statement);
+    lastEvaluated = evaluate(statement, env);
   }
   return lastEvaluated;
 }
@@ -37,9 +40,9 @@ function eval_numeric_binary_expr(
     type: "number",
   } as NumberVal;
 }
-function evaluate_binary_expr(binOp: BinaryExpr): RuntimeVal {
-  const lhs = evaluate(binOp.left);
-  const rhs = evaluate(binOp.right);
+function evaluate_binary_expr(binOp: BinaryExpr, env: Environment): RuntimeVal {
+  const lhs = evaluate(binOp.left, env);
+  const rhs = evaluate(binOp.right, env);
 
   if (lhs.type === "number" && rhs.type === "number") {
     return eval_numeric_binary_expr(
@@ -49,12 +52,14 @@ function evaluate_binary_expr(binOp: BinaryExpr): RuntimeVal {
     );
   }
 
-  return {
-    type: "null",
-    value: "null",
-  } as NullVal;
+  return MK_NULL();
 }
-export function evaluate(astNode: Stmt): RuntimeVal {
+
+function eval_identifier(ident: Identifier, env: Environment): RuntimeVal {
+  return env.lookupVar(ident.symbol);
+}
+
+export function evaluate(astNode: Stmt, env: Environment): RuntimeVal {
   switch (astNode.kind) {
     case "NumericLiteral":
       return {
@@ -62,17 +67,14 @@ export function evaluate(astNode: Stmt): RuntimeVal {
         type: "number",
       } as NumberVal;
 
-    case "NullLiteral":
-      return {
-        value: "null",
-        type: "null",
-      } as NullVal;
+    case "Identifier":
+      return eval_identifier(astNode as Identifier, env);
 
     case "BinaryExpr":
-      return evaluate_binary_expr(astNode as BinaryExpr);
+      return evaluate_binary_expr(astNode as BinaryExpr, env);
 
     case "Program":
-      return eval_program(astNode as Program);
+      return eval_program(astNode as Program, env);
 
     default:
       console.error("This AST Node has not yet been setup for interpretation");
