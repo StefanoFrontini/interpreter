@@ -1,5 +1,18 @@
+// ----------------------------------------------------------
+// --------------------AST types ---------------------------
+// -------Defines the structure of our languages AST ------
+// ----------------------------------------------------------
 export type NodeType =
+  // STATEMENTS
   | "Program" // array of statements
+  | "VarDeclaration"
+
+  // EXPRESSIONS
+  | "AssignmentExpr"
+
+  // LITERALS
+  | "Property"
+  | "ObjectLiteral"
   | "NumericLiteral" // expression
   | "Identifier" // expression
   | "BinaryExpr"; // expression
@@ -17,7 +30,20 @@ export interface Program extends Stmt {
   body: Stmt[];
 }
 
+export interface VarDeclaration extends Stmt {
+  kind: "VarDeclaration";
+  constant: boolean;
+  identifier: string;
+  value: Expr;
+}
+
 export interface Expr extends Stmt {}
+
+export interface AssignmentExpr extends Expr {
+  kind: "AssignmentExpr";
+  assigne: Expr;
+  value: Expr;
+}
 
 export interface BinaryExpr extends Expr {
   kind: "BinaryExpr";
@@ -34,4 +60,15 @@ export interface Identifier extends Expr {
 export interface NumericLiteral extends Expr {
   kind: "NumericLiteral";
   value: number;
+}
+
+export interface Property extends Expr {
+  kind: "Property";
+  key: string;
+  value?: Expr;
+}
+
+export interface ObjectLiteral extends Expr {
+  kind: "ObjectLiteral";
+  properties: Property[];
 }

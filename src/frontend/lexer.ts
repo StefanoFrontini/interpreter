@@ -11,18 +11,25 @@ export enum TokenType {
 
   // Keywords
   Let,
+  Const,
 
   // Grouping + Operators
   BinaryOperator,
   Equals,
+  Comma,
+  Colon,
+  Semicolon,
   OpenParen,
   CloseParen,
+  OpenBrace, //
+  CloseBrace,
   EOF, // end of file
 }
 
 // Constant lookup for keywords and known identifier + symbols.
 const KEYWORDS: Record<string, TokenType> = {
   let: TokenType.Let,
+  const: TokenType.Const,
 };
 
 export interface Token {
@@ -41,7 +48,7 @@ function isAlpha(src: string): boolean {
   return src.toUpperCase() !== src.toLowerCase();
 }
 function isSkippable(src: string): boolean {
-  return src === " " || src === "\n" || src === "\t";
+  return src === " " || src === "\n" || src === "\t" || src === "\r";
 }
 
 function isInt(str: string): boolean {
@@ -57,6 +64,10 @@ export function tokenize(sourceCode: string): Token[] {
   while (src.length > 0) {
     if (src[0] === "(") {
       tokens.push(token(src.shift(), TokenType.OpenParen));
+    } else if (src[0] === "{") {
+      tokens.push(token(src.shift(), TokenType.OpenBrace));
+    } else if (src[0] === "}") {
+      tokens.push(token(src.shift(), TokenType.CloseBrace));
     } else if (src[0] === ")") {
       tokens.push(token(src.shift(), TokenType.CloseParen));
     } else if (
@@ -69,6 +80,12 @@ export function tokenize(sourceCode: string): Token[] {
       tokens.push(token(src.shift(), TokenType.BinaryOperator));
     } else if (src[0] === "=") {
       tokens.push(token(src.shift(), TokenType.Equals));
+    } else if (src[0] === ";") {
+      tokens.push(token(src.shift(), TokenType.Semicolon));
+    } else if (src[0] === ":") {
+      tokens.push(token(src.shift(), TokenType.Colon));
+    } else if (src[0] === ",") {
+      tokens.push(token(src.shift(), TokenType.Comma));
     } else {
       // Handle multicharacter tokens
       if (isInt(src[0])) {

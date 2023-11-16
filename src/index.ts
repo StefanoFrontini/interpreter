@@ -1,11 +1,13 @@
+import { readFileSync } from "node:fs";
 import { exit } from "node:process";
 import * as readline from "node:readline/promises";
 import Parser from "./frontend/parser.js";
-import Environment from "./runtime/environment.js";
+import { createGlobalEnv } from "./runtime/environment.js";
 import { evaluate } from "./runtime/interpreter.js";
-import { MK_BOOL, MK_NULL, MK_NUMBER } from "./runtime/values.js";
 
-repl();
+// repl();
+
+run("src/test.txt");
 
 async function repl() {
   const rl = readline.createInterface({
@@ -14,11 +16,7 @@ async function repl() {
   });
 
   const parser = new Parser();
-  const env = new Environment();
-  env.declareVar("x", MK_NUMBER(100));
-  env.declareVar("true", MK_BOOL(true));
-  env.declareVar("false", MK_BOOL(false));
-  env.declareVar("null", MK_NULL());
+  const env = createGlobalEnv();
 
   console.log("Repl v0.1");
 
@@ -45,7 +43,15 @@ async function repl() {
   }
 }
 
-// const source = readFileSync("src/test.txt", "utf-8");
+function run(filename: string) {
+  const parser = new Parser();
+  const env = createGlobalEnv();
+
+  const input = readFileSync(filename, { encoding: "utf8" });
+  const program = parser.produceAST(input);
+  const result = evaluate(program, env);
+  console.log(result);
+}
 
 // for (const token of tokenize(source)) {
 //   console.log(token);
